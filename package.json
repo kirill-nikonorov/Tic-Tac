@@ -1,0 +1,26 @@
+{
+  "name": "Tic_tac_toe_with_test_requirements",
+  "version": "0.0.1",
+  "scripts": {
+    "watch": "node ./server/index.js"
+  },
+  "dependencies": {
+    "express": "^4.14.0",
+    "path": "^0.12.7",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-redux": "^5.0.7",
+    "redux": "^3.7.2",
+    "redux-undo": "^0.6.1"
+  },
+  "devDependencies": {
+    "webpack": "^4.1.1",
+    "webpack-dev-middleware": "^2.0.0",
+    "webpack-hot-middleware": "^2.21.2",
+    "webpack-cli": "^2.0.12",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.4",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-react": "^6.24.1"
+  }
+}
