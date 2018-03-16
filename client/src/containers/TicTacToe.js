@@ -4,21 +4,29 @@ import {bindActionCreators} from "redux"
 
 
 import GameBoard from "../components/GameBoard"
+import UdoRedo from "../components/UdoRedo"
 
 import * as actions from "../actions/actions"
 
 class TicTacToe extends React.Component {
+
+
     handleClick(i) {
 
-        let {squares, actions} = this.props;
-        let winner = this.calculateWinner(squares);
-        if (winner||squares[i]) return;
+
+        const {actions, history, presentStep} = this.props;
+        let currentHistory = history[presentStep];
+        let currentSquares = currentHistory.squares;
+
+
+        if (this.calculateWinner(currentSquares) || currentSquares[i]) return;
+        //    console.log("handleClick = ", currentSquares)
+
         actions.makeStep(i);
-    }
-
-    renderGameInfo() {
+        // console.log("handleClick = ", actions.makeStep)
 
     }
+
 
     calculateWinner(square) {
         const wins = [
@@ -37,18 +45,37 @@ class TicTacToe extends React.Component {
         for (let i = 0; i < wins.length; i++) {
             let [a, b, c] = wins[i];
             if (square[a] && square[a] === square[b] && square[a] === square[c]) {
+                console.log("calculateWinner = ", square[a])
                 return square[a];
             }
         }
         return null;
     }
 
+    jumpTo(step) {
+        let {actions: {changeStepNumber}} = this.props;
+        changeStepNumber(step)
+    }
+
 
     render() {
-        let {squares} = this.props;
+        console.log("_____________ ")
 
-        let info = <h5>Next step from {this.props.xIsNext ? "x" : "o"}</h5>
-        let winer = this.calculateWinner(squares);
+
+        const {history, presentStep} = this.props;
+        console.log("history = ", history)
+
+        console.log("presentStep = ", presentStep)
+
+        let currentHistory = history[presentStep];
+        console.log("currentHistory = ", currentHistory)
+
+        let currentSquare = currentHistory.squares
+        console.log("currentSquare = ", currentSquare)
+
+
+        let info = <h5>Next step from {currentHistory.xIsNext ? "x" : "o"}</h5>
+        let winer = this.calculateWinner(currentSquare);
         if (winer) {
             info = <h5>The Winner Is {winer}</h5>
         }
@@ -56,8 +83,12 @@ class TicTacToe extends React.Component {
             <div>
                 <h4>Hello From TicTacToe</h4>
                 <GameBoard onClick={(i) => this.handleClick(i)}
-                           squares={this.props.squares}
+                           squares={currentSquare}
                 />
+                <UdoRedo history={history}
+                         onClick={(step) => this.jumpTo(step)}
+                />
+
                 {info}
             </div>)
     }
@@ -73,11 +104,11 @@ const
     }
 const
     mapStateToProps = (state) => {
-        console.log(state)
+        console.log("mapToProps = ", state)
         return {
 
-            squares: state.squares,
-            xIsNext: state.xIsNext
+            history: state.history,
+            presentStep: state.presentStep
         }
     }
 

@@ -1,1 +1,2 @@
 export const MAKE_STEP = "MAKE_STEP"
+export const CHANGE_STEP_NUMBER = "CHANGE_STEP_NUMBER"
