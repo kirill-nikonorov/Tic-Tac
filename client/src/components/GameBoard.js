@@ -6,10 +6,12 @@ class GameBoard extends React.Component {
 
 
     renderSquare(i) {
-        const {onClick, squares} = this.props;
+        const {onClick, squares, disabled} = this.props;
         return (
             <Square number={squares[i]}
-                    onClick={() => onClick(i)}/>
+                    onClick={() => onClick(i)}
+                    disabled={disabled}
+            />
         )
     }
 

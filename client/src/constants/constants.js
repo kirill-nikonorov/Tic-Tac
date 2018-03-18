@@ -1,2 +1,5 @@
 export const MAKE_STEP = "MAKE_STEP"
+export const INITIAL_ITEMS = "INITIAL_ITEMS"
+//export const MAKE_STEP_SOCKET = "MAKE_STEP_SOCKET"
+
 export const CHANGE_STEP_NUMBER = "CHANGE_STEP_NUMBER"

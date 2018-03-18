@@ -1,81 +1,49 @@
 import React from "react"
 import {connect} from "react-redux"
 import {bindActionCreators} from "redux"
+import io from "socket.io-client"
+import jwt from "jwt-client"
 
 
 import GameBoard from "../components/GameBoard"
-import UdoRedo from "../components/UdoRedo"
+
 
 import * as actions from "../actions/actions"
+import {initialItems} from "../actions/actions";
+
+
+let socket;
 
 class TicTacToe extends React.Component {
-
+    constructor(props) {
+        super();
+        createSocketConnection(props.token, props.actions);
+    }
 
     handleClick(i) {
 
+        const {actions , square, xIsNext , dispatch} = this.props;
 
-        const {actions, history, presentStep} = this.props;
-        let currentHistory = history[presentStep];
-        let currentSquares = currentHistory.squares;
+        let currentMark = xIsNext ? "x" : "o";
 
+        if (calculateWinner(square) || square[i]) return;
 
-        if (this.calculateWinner(currentSquares) || currentSquares[i]) return;
-        //    console.log("handleClick = ", currentSquares)
-
-        actions.makeStep(i);
-        // console.log("handleClick = ", actions.makeStep)
-
+        actions.makeStepSocket(socket, i, currentMark);
     }
-
-
-    calculateWinner(square) {
-        const wins = [
-            [0, 1, 2],
-            [3, 4, 5],
-            [6, 7, 8],
-
-            [0, 3, 6],
-            [1, 4, 7],
-            [2, 5, 8],
-
-            [0, 4, 8],
-            [2, 4, 6],
-        ];
-
-        for (let i = 0; i < wins.length; i++) {
-            let [a, b, c] = wins[i];
-            if (square[a] && square[a] === square[b] && square[a] === square[c]) {
-                console.log("calculateWinner = ", square[a])
-                return square[a];
-            }
-        }
-        return null;
-    }
-
-    jumpTo(step) {
-        let {actions: {changeStepNumber}} = this.props;
-        changeStepNumber(step)
-    }
-
 
     render() {
-        console.log("_____________ ")
 
+        //  console.log("_____________ ")
+        const {square, xIsNext, token} = this.props;
 
-        const {history, presentStep} = this.props;
-        console.log("history = ", history)
+        let areYouFirst = jwt.read(token).claim.areYouFirst;
+      //  console.log("areYouFirst = ", areYouFirst)
 
-        console.log("presentStep = ", presentStep)
+        let disabled = xIsNext !== areYouFirst
+      //  console.log("render = diabled =  ", disabled)
 
-        let currentHistory = history[presentStep];
-        console.log("currentHistory = ", currentHistory)
-
-        let currentSquare = currentHistory.squares
-        console.log("currentSquare = ", currentSquare)
-
-
-        let info = <h5>Next step from {currentHistory.xIsNext ? "x" : "o"}</h5>
-        let winer = this.calculateWinner(currentSquare);
+        let info = <h5>Next step from {xIsNext ? "x" : "o"}</h5>
+        let winer = calculateWinner(square);
         if (winer) {
             info = <h5>The Winner Is {winer}</h5>
         }
@@ -83,32 +51,88 @@ class TicTacToe extends React.Component {
             <div>
                 <h4>Hello From TicTacToe</h4>
                 <GameBoard onClick={(i) => this.handleClick(i)}
-                           squares={currentSquare}
-                />
-                <UdoRedo history={history}
-                         onClick={(step) => this.jumpTo(step)}
-                />
+                           squares={square}
+                           disabled={disabled}
 
+                />
                 {info}
             </div>)
     }
 
+    componentWillUnmount() {
+        socket.disconnect()
+    }
+
 }
+
+const calculateWinner = (square) => {
+    const wins = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+
+        [0, 4, 8],
+        [2, 4, 6],
+    ];
+
+    for (let i = 0; i < wins.length; i++) {
+        let [a, b, c] = wins[i];
+        if (square[a] && square[a] === square[b] && square[a] === square[c]) {
+            console.log("calculateWinner = ", square[a])
+            return square[a];
+        }
+    }
+    return null;
+};
+
+const createSocketConnection = (token, actions) => {
+
+    const roomNum = jwt.read(token).claim.roomNum;
+
+    console.log("createSocketConnection = ", roomNum);
+
+    socket = io("", {
+        forceNew: true,
+        query: 'token=' + token
+    });
+
+
+    actions.loadInitialDataSocket(socket);
+
+
+    socket.on("makeStep", (data) => {
+        console.log(data.number);
+
+        actions.makeStep(data.number)
+    });
+
+    socket.on("disconnect ", () => {
+        console.log("disconnect")
+    })
+
+};
 
 
 const
-    mapDispatchToProps = (disatch) => {
+    mapDispatchToProps = (dispatch) => {
         return {
-            actions: bindActionCreators(actions, disatch)
+            dispatch: dispatch,
+            actions: bindActionCreators(actions, dispatch)
         }
     }
 const
-    mapStateToProps = (state) => {
-        console.log("mapToProps = ", state)
+    mapStateToProps = (state, props) => {
+        //   console.log("mapToProps = " , props)
         return {
+            square: state.square,
+            xIsNext: state.xIsNext,
 
-            history: state.history,
-            presentStep: state.presentStep
+            token: props.token
+
         }
     }
 

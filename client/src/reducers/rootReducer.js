@@ -1,38 +1,31 @@
-import {MAKE_STEP, CHANGE_STEP_NUMBER} from "../constants/constants";
+import {MAKE_STEP, CHANGE_STEP_NUMBER, INITIAL_ITEMS} from "../constants/constants";
 import undoable, {distinctState} from 'redux-undo'
 
 export const grtInitialState = () => {
     return {
-        history: [{
-            squares: Array(9).fill(null),
-            xIsNext: true
-        }],
-        presentStep: 0
-
+        square: Array(9).fill(null),
+        xIsNext: true
     }
 }
 
 const rootReducer = (state = grtInitialState(), action) => {
     switch (action.type) {
         case MAKE_STEP :
-            //  console.log("сработало = ", action.number)
+            //   console.log("сработало = ", action.number)
+            let square = state.square.slice();
+            square[action.number] = state.xIsNext ? "x" : "o"
 
-            const {history, presentStep} = state;
-            let currentHistory = history.slice(0, state.presentStep + 1);
-            console.log("reducer = ", currentHistory)
-            let currentSquares = currentHistory[currentHistory.length - 1].squares.slice();
-            let currentXIsNext = !!currentHistory[currentHistory.length - 1].xIsNext;
-
-            currentSquares[action.number] = currentXIsNext ? "x" : "0";
-            currentXIsNext = !currentXIsNext;
-
-
-            let newHistory = currentHistory.concat({squares: currentSquares, xIsNext: currentXIsNext})
             return {
 
-                history: newHistory,
-                presentStep: newHistory.length - 1
+                square: square,
+                xIsNext: !state.xIsNext
             }
+        case INITIAL_ITEMS :
+            let filledButtons = action.squareArr.reduce((sum, item) => {
+                return sum += item === null ? 0 : 1;
+            }, 0)
+            console.log("filledButtons = " ,filledButtons)
+            return {square: action.squareArr, xIsNext: filledButtons % 2 !== 1};
         case CHANGE_STEP_NUMBER :
             return {
                 history: state.history,
