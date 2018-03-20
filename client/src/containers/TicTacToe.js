@@ -22,7 +22,7 @@ class TicTacToe extends React.Component {
 
     handleClick(i) {
 
-        const {actions , square, xIsNext , dispatch} = this.props;
+        const {actions, square, xIsNext, dispatch} = this.props;
 
         let currentMark = xIsNext ? "x" : "o";
 
@@ -37,10 +37,10 @@ class TicTacToe extends React.Component {
         const {square, xIsNext, token} = this.props;
 
         let areYouFirst = jwt.read(token).claim.areYouFirst;
-      //  console.log("areYouFirst = ", areYouFirst)
+        //  console.log("areYouFirst = ", areYouFirst)
 
         let disabled = xIsNext !== areYouFirst
-      //  console.log("render = diabled =  ", disabled)
+        //  console.log("render = diabled =  ", disabled)
 
         let info = <h5>Next step from {xIsNext ? "x" : "o"}</h5>
         let winer = calculateWinner(square);
@@ -55,6 +55,8 @@ class TicTacToe extends React.Component {
                            disabled={disabled}
 
                 />
+                <button onClick={cleanBoard}>clean Board</button>
+
                 {info}
             </div>)
     }
@@ -63,6 +65,10 @@ class TicTacToe extends React.Component {
         socket.disconnect()
     }
 
+}
+
+const cleanBoard = () => {
+    socket.emit("cleanBoard");
 }
 
 const calculateWinner = (square) => {
@@ -95,7 +101,7 @@ const createSocketConnection = (token, actions) => {
 
     console.log("createSocketConnection = ", roomNum);
 
-    socket = io("", {
+    socket = io("/ticTacToe", {
         forceNew: true,
         query: 'token=' + token
     });
@@ -105,8 +111,6 @@ const createSocketConnection = (token, actions) => {
 
 
     socket.on("makeStep", (data) => {
-        console.log(data.number);
-
         actions.makeStep(data.number)
     });
 

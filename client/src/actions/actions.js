@@ -15,7 +15,6 @@ export const initialItems = (data) => {
 
 export const makeStepSocket = (socket, number, mark) => {
     return (dispatch) => {
-        console.log("makeStepSocket = " , number )
         socket.emit('makeStepEmit', {number: number, mark: mark})
     }
 };
@@ -26,7 +25,6 @@ export const loadInitialDataSocket = (socket) => {
     console.log("loadInitialDataSocket")
     return (dispatch) => {
         socket.on("initialState", (data) => {
-            console.log(data)
 
             dispatch(initialItems(data))
 

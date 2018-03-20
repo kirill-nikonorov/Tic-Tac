@@ -16,24 +16,29 @@ const app = require('express')();
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
 
-var jwtAuth = require('socketio-jwt-auth');
-
 
 app.use(webpackDevMiddlewere(compiler));
 app.use(webpackHotMiddlewere(compiler));
 
 
 app.get("/", (req, res) => {
+    console.log("______________");
+
     console.log("get General page")
+    console.log("______________");
+
     res.sendFile(path.resolve(__dirname + "/static/index.html"))
 
 });
-// в завиимости от параметров возвращает токен
+// в завиимости от параметров возвращает токен-----
 app.use("/authinticate", authenticate.handleInvitedLink);
 app.use("/authinticate", authenticate.handleNewUsers);
 //app.delete("/authinticate", authenticate.removeTokenFromRoom)
 
-io.use((socket, next) => {
+
+console.log("after auth");
+
+const checkToken = (socket, next) => {
 
     let token = socket.handshake.query.token;
 
@@ -52,18 +57,46 @@ io.use((socket, next) => {
         socket.disconnect();
         return;
     }
-    console.log("payload = ", decoded)
+    console.log("decoded = ", decoded)
     socket.decoded = decoded
     next();
 
-});
-console.log("after auth");
+}
 
+
+let chatIo = io.of("/chat");
+let ticTacToeIo = io.of("/ticTacToe");
+
+ticTacToeIo.use(checkToken);
+chatIo.use(checkToken);
+
+chatIo.on("connection", (socket) => {
+    console.log("______________");
+
+    console.log("chatIo : User connected = ", socket.decoded)
+
+    let roomNum = socket.decoded.roomNum;
+
+    socket.join(roomNum);
+
+    socket.on("message", (data) => {
+        console.log(data)
+        chatIo.in(roomNum).emit("message", data)
+    })
+
+    console.log("______________");
+
+});
 
 let serversSrores = [];
-io.on("connection", (socket) => {
+ticTacToeIo.on("connection", (socket) => {
+    console.log("______________");
+
     let localServerStore;
     let roomNum = socket.decoded.roomNum;
+
+    console.log("Tic Tac toe : User Connected , room = ", roomNum)
+
 
     if (!serversSrores[roomNum]) {
         serversSrores[roomNum] = Array(9).fill(null);
@@ -72,8 +105,6 @@ io.on("connection", (socket) => {
         localServerStore = serversSrores[roomNum];
     }
 
-    console.log("______________");
-    console.log("user connected = ", roomNum);
     console.log("all sockets ", Object.keys(io.sockets.connected));
 
     socket.join(roomNum);
@@ -82,8 +113,14 @@ io.on("connection", (socket) => {
         localServerStore[data.number] = data.mark;
 
         console.log("makeStep = ", data);
-        console.log("localServerStore = ", localServerStore);
-        io.in(roomNum).emit("makeStep", data)
+        ticTacToeIo.in(roomNum).emit("makeStep", data)
+    });
+    socket.on("cleanBoard", () => {
+        console.log("cleanBoard");
+
+        serversSrores[roomNum] = Array(9).fill(null);
+        localServerStore = serversSrores[roomNum]
+        ticTacToeIo.in(roomNum).emit('initialState', localServerStore);
     });
 
     socket.emit('initialState', localServerStore)
@@ -92,6 +129,7 @@ io.on("connection", (socket) => {
         console.log("disconnected  ")
 
     })
+    console.log("______________");
 
 });
 
@@ -99,3 +137,6 @@ let port = 3001;
 http.listen(port, function () {
     setTimeout(() => console.log('Example app listening on port ' + port + '!'), 1000);
 });
+
+
+

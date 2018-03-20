@@ -1,32 +1,33 @@
 import React from "react"
 import TicTacToe from "../containers/TicTacToe"
-import qs from "qs"
+import Chat from "./Chat"
 
+
+import qs from "qs"
 import jwt from "jwt-client"
 
 
 class App extends React.Component {
     constructor() {
         super();
+        let shouldStart = localStorage.getItem("shouldStart");
+        console.log("shouldStart = ", shouldStart)
         this.state = {
-            token: localStorage.getItem("token")
-        };
+            token: localStorage.getItem("token") ? localStorage.getItem("token") : null,
+            shouldStart: shouldStart ? JSON.parse(shouldStart).shouldStart : false
+        }
+
         this.cleanStorage = this.cleanStorage.bind(this);
     }
 
     getAuthenticationToken() {
 
         let self = this;
-        let {token} = localStorage;
-
-        console.log("token = " ,token)
 
         let urlTamplate = createUrlFromSearchParams();
 
-
         let xhr = new XMLHttpRequest();
         xhr.open("get", urlTamplate, true);
-
 
         xhr.responseType = 'json';
 
@@ -48,7 +49,6 @@ class App extends React.Component {
             console.log("localStorage = ", localStorage);
 
             self.setState({token: token})
-            console.log("this.state = ", self.state);
 
         };
         xhr.send(null)
@@ -56,45 +56,25 @@ class App extends React.Component {
     }
 
     cleanStorage() {
+        console.log("cleanStorage");
 
-        localStorage.clear();
-
-       /* let self = this;
-
-        let {token} = this.state;
-
-        let xhr = new XMLHttpRequest();
-        xhr.open("delete", "/authinticate", true);
-        xhr.responseType = 'json';
-        xhr.onreadystatechange = function () {
-
-            if (this.readyState !== 4) return;
-            if (this.status !== 200) {
-                console.log(this.status)
-                alert(this.status + " " + this.statusText + "\nДаннная ссылка недействительна")
-
-                return;
-            }
-
-            localStorage.clear();
-            console.log("localStorage = rdelete =  ", localStorage);
-
-            self.setState({token: undefined})
-            console.log("this.state = rdelete = ", self.state);
-            window.location = "http://localhost:3001/";
-
-            console.log(window.location)
-
-        };
-        xhr.send(token)*/
+        localStorage.removeItem("token");
+        localStorage.removeItem("shouldStart");
+        this.setState({
+            token: undefined,
+            shouldStart: false
+        })
 
     };
 
     render() {
-        let {token} = this.state;
+        let {token, shouldStart} = this.state;
 
+        let willAuthGo = !token && shouldStart;
+        console.log("willAuthGo ", willAuthGo)
 
-        if (!token) {
+        if (willAuthGo) {
+            console.log("willAuthGo ", willAuthGo)
             this.getAuthenticationToken();
         }
 
@@ -103,13 +83,46 @@ class App extends React.Component {
             <div>
                 <h1>App</h1>
 
-                {token ? <TicTacToe token={token}/> : ""}
-                {token ? generateInviteLink(token) : ""}
-                <button onClick={this.cleanStorage}>go to new room</button>
+                <main>
+                    {token ? <TicTacToe token={token}/> : ""}
+                    {token ? generateInviteLink(token) : ""}
+                    {token ? <Chat token={token}/> : ""}
+                </main>
+                <footer>
+                    <br/>
+                    <button onClick={goToNewRoom}>Go to new room</button>
+                    <br/>
+                    <button onClick={this.cleanStorage}>Clean Storage</button>
+                    <br/>
+                    <button onClick={allowAuthentication}>allowAuthentication</button>
+                    <br/>
+                    <button onClick={forbidAuthentication}>forbidAuthentication</button>
+                </footer>
             </div>
         )
     }
 }
+
+
+const goToNewRoom = () => {
+
+    localStorage.removeItem("token");
+    localStorage.setItem("shouldStart", JSON.stringify({shouldStart: true}))
+
+
+    window.location = "/"
+};
+
+const allowAuthentication = () => {
+
+    localStorage.setItem("shouldStart", JSON.stringify({shouldStart: true}))
+};
+const forbidAuthentication = () => {
+
+    localStorage.setItem("shouldStart", JSON.stringify({shouldStart: false}))
+
+};
+
 
 const createUrlFromSearchParams = () => {
 

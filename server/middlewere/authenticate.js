@@ -5,7 +5,7 @@ const handleInvitedLink = (req, res, next) => {
     let roomNum = req.query.room;
     if (roomNum) {
         console.log("есть параметры поиска комнаты ")
-        if (rooms[roomNum] && rooms[roomNum].length == 1) {
+        if (rooms[roomNum] && rooms[roomNum].length === 1) {
             let token = jwt.sign({roomNum: roomNum, areYouFirst: false}, "shh")
             rooms[roomNum].push(token);
             res.json({token: token, areYouFirst : false})
