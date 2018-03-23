@@ -42,14 +42,15 @@ class TicTacToe extends React.Component {
         let disabled = xIsNext !== areYouFirst
         //  console.log("render = diabled =  ", disabled)
 
-        let info = <h5>Next step from {xIsNext ? "x" : "o"}</h5>
+        let info = <h5><em>Next step from {xIsNext ? "x" : "o"}</em></h5>
         let winer = calculateWinner(square);
         if (winer) {
             info = <h5>The Winner Is {winer}</h5>
         }
         return (
             <div>
-                <h4>Hello From TicTacToe</h4>
+                {info}
+
                 <GameBoard onClick={(i) => this.handleClick(i)}
                            squares={square}
                            disabled={disabled}
@@ -57,11 +58,11 @@ class TicTacToe extends React.Component {
                 />
                 <button onClick={cleanBoard}>clean Board</button>
 
-                {info}
             </div>)
     }
 
     componentWillUnmount() {
+        console.log("Tic Tac Toe componentWillUnmount")
         socket.disconnect()
     }
 

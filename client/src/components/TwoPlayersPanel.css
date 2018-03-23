@@ -1,0 +1,8 @@
+.two-players-elements {
+    display: flex;
+    flex: 1 0 500px;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
+

@@ -1,6 +1,8 @@
 import React from "react"
-import TicTacToe from "../containers/TicTacToe"
-import Chat from "./Chat"
+
+import TwoPlayersPanel from "./TwoPlayersPanel"
+import "./App.css"
+import 'react-bootstrap';
 
 
 import qs from "qs"
@@ -14,17 +16,22 @@ class App extends React.Component {
         console.log("shouldStart = ", shouldStart)
         this.state = {
             token: localStorage.getItem("token") ? localStorage.getItem("token") : null,
-            shouldStart: shouldStart ? JSON.parse(shouldStart).shouldStart : false
+            shouldStart: shouldStart ? JSON.parse(shouldStart).shouldStart : true
         }
 
-        this.cleanStorage = this.cleanStorage.bind(this);
+        this.leaveThisRoom = this.leaveThisRoom.bind(this);
+        this.goToNewRoom = this.goToNewRoom.bind(this);
     }
 
-    getAuthenticationToken() {
+    getAuthenticationToken(roomParams) {
 
         let self = this;
 
-        let urlTamplate = createUrlFromSearchParams();
+        let urlTamplate = "/authinticate";
+
+        if (roomParams) {
+            urlTamplate += roomParams;
+        }
 
         let xhr = new XMLHttpRequest();
         xhr.open("get", urlTamplate, true);
@@ -48,22 +55,35 @@ class App extends React.Component {
             localStorage.setItem("token", token);
             console.log("localStorage = ", localStorage);
 
-            self.setState({token: token})
+            self.setState({
+                token: token,
+                shouldStart: true
+            })
 
         };
         xhr.send(null)
 
     }
 
-    cleanStorage() {
-        console.log("cleanStorage");
+    leaveThisRoom() {
+        console.log("leaveThisRoom");
 
         localStorage.removeItem("token");
-        localStorage.removeItem("shouldStart");
+        localStorage.setItem("shouldStart", JSON.stringify({shouldStart: false}));
         this.setState({
             token: undefined,
             shouldStart: false
         })
+
+    };
+
+    goToNewRoom() {
+
+        localStorage.removeItem("token");
+        localStorage.setItem("shouldStart", JSON.stringify({shouldStart: true}))
+
+        //this.getAuthenticationToken();
+        window.location="/"
 
     };
 
@@ -75,58 +95,36 @@ class App extends React.Component {
 
         if (willAuthGo) {
             console.log("willAuthGo ", willAuthGo)
-            this.getAuthenticationToken();
+            this.getAuthenticationToken(createUrlFromSearchParams());
         }
 
-
         return (
-            <div>
-                <h1>App</h1>
-
-                <main>
-                    {token ? <TicTacToe token={token}/> : ""}
-                    {token ? generateInviteLink(token) : ""}
-                    {token ? <Chat token={token}/> : ""}
+            <div className={" panel panel-default"}>
+                <header className={" panel-heading text-center"}>
+                    <h1>Tic Tac Toe Game</h1>
+                </header>
+                <main className={" panel panel-body"}>
+                    {token ? <TwoPlayersPanel token={token}
+                                              inviteLink={generateInviteLink(token)}
+                                              onModalButtonClick={this.leaveThisRoom}
+                        />
+                        : "Enter a room"}
                 </main>
-                <footer>
+                <footer className={" panel-footer text-center"}>
+                    <button onClick={this.goToNewRoom}>Go to new room</button>
                     <br/>
-                    <button onClick={goToNewRoom}>Go to new room</button>
+                    <button onClick={this.leaveThisRoom}>Leave this room</button>
                     <br/>
-                    <button onClick={this.cleanStorage}>Clean Storage</button>
-                    <br/>
-                    <button onClick={allowAuthentication}>allowAuthentication</button>
-                    <br/>
-                    <button onClick={forbidAuthentication}>forbidAuthentication</button>
+                    {token ? generateInviteLink(token) : ""}
                 </footer>
             </div>
         )
     }
 }
 
-
-const goToNewRoom = () => {
-
-    localStorage.removeItem("token");
-    localStorage.setItem("shouldStart", JSON.stringify({shouldStart: true}))
-
-
-    window.location = "/"
-};
-
-const allowAuthentication = () => {
-
-    localStorage.setItem("shouldStart", JSON.stringify({shouldStart: true}))
-};
-const forbidAuthentication = () => {
-
-    localStorage.setItem("shouldStart", JSON.stringify({shouldStart: false}))
-
-};
-
-
 const createUrlFromSearchParams = () => {
 
-    let urlTamplate = "/authinticate";
+    let urlTamplate = "";
 
     let searchParams = window.location.search.substring(1);
     if (searchParams) {
@@ -148,7 +146,9 @@ const generateInviteLink = (token) => {
 
     console.log("roomNum = ", roomNum)
 
-    return (<a href={"http://localhost:3001/?room=" + roomNum}>Ссылка = {roomNum}</a>)
+    let inviteAdress = "http://localhost:3001/?room=" + roomNum
+
+    return (<a href={inviteAdress}>{inviteAdress}</a>)
 
 }
 
