@@ -1,6 +1,7 @@
 import React from "react"
 
 import Square from "./Square"
+import "./GameBoard.css"
 
 class GameBoard extends React.Component {
 

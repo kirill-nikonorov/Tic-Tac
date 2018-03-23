@@ -4,7 +4,7 @@ const handleInvitedLink = (req, res, next) => {
 
     let roomNum = req.query.room;
     if (roomNum) {
-        console.log("есть параметры поиска комнаты ")
+        console.log("новый Второй игрок : есть параметры поиска комнаты ")
         if (rooms[roomNum] && rooms[roomNum].length === 1) {
             let token = jwt.sign({roomNum: roomNum, areYouFirst: false}, "shh")
             rooms[roomNum].push(token);
@@ -20,7 +20,7 @@ const handleInvitedLink = (req, res, next) => {
 const handleNewUsers = (req, res, next) => {
 
     let lastRoom = rooms.length;
-    console.log("создаю тоен и отправляю ")
+    console.log("новый Первый игрок : создаю тоен и отправляю ")
 
     let token = jwt.sign({roomNum: lastRoom, areYouFirst: true}, "shh")
     rooms.push([token]);
@@ -30,7 +30,7 @@ const handleNewUsers = (req, res, next) => {
 
 const rooms = [];
 let timer = setInterval(() => {
-    console.log(rooms.map((room) => {
+    console.log("rooms = " ,rooms.map((room) => {
         return room.length
     }))
 }, 2000)

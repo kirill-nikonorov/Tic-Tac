@@ -1,0 +1,10 @@
+.chat-panel {
+    height: 150px;
+    border: 1px solid grey;
+    overflow: auto;
+}
+
+
+ul.messages > li {
+    list-style-type : none;
+}

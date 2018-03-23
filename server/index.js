@@ -1,9 +1,9 @@
 const path = require("path")
 
 const webpack = require("webpack");
-const config = require("../webpack.config")
+const config = require("../webpack.config");
 const compiler = webpack(config);
-const authenticate = require("./middlewere/authenticate")
+const authenticate = require("./middlewere/authenticate");
 
 const jwt = require('jsonwebtoken');
 
@@ -61,14 +61,74 @@ const checkToken = (socket, next) => {
     socket.decoded = decoded
     next();
 
-}
+};
+const isRoomFree = (socket, next) => {
 
+    let roomNum = socket.decoded.roomNum;
+
+    roomFillerObserverIo.in(roomNum).clients((err, clients) => {
+        if (err) throw  err;
+        console.log(`isRoomFree clients of Room № ${roomNum} = `, clients)
+        if (clients.length < 2) {
+            next();
+        }
+        else socket.disconnect();
+    })
+
+}
 
 let chatIo = io.of("/chat");
 let ticTacToeIo = io.of("/ticTacToe");
+let roomFillerObserverIo = io.of("/roomFillerObserver");
+
+let timer = setInterval(() => {
+    console.log("sockets = ", Object.keys(io.sockets.connected))
+}, 2000);
 
 ticTacToeIo.use(checkToken);
 chatIo.use(checkToken);
+roomFillerObserverIo.use(checkToken);
+roomFillerObserverIo.use(isRoomFree);
+
+roomFillerObserverIo.on("connection", (socket) => {
+    console.log("______________");
+    console.log("roomFillerObserverIo : User connected = ", socket.decoded)
+
+    let roomNum = socket.decoded.roomNum;
+
+
+    roomFillerObserverIo.in(roomNum).clients((err, clients) => {
+        if (err) throw  err;
+
+        if (clients.length < 2) {
+            socket.join(roomNum);
+        }
+        console.log(`clients of Room № ${roomNum} = `, clients)
+
+    });
+    setTimeout(() => {
+        roomFillerObserverIo.in(roomNum).clients((err, clients) => {
+            if (err) throw  err;
+
+            if (clients.length === 2) {
+                roomFillerObserverIo.in(roomNum).emit("startGame")
+            }
+            console.log(`clients of Room № ${roomNum} = `, clients)
+
+        });
+    }, 1);
+
+
+    socket.on("disconnect", () => {
+
+        roomFillerObserverIo.in(roomNum).emit("endGame")
+        console.log("disconnected  ")
+
+    })
+    console.log("______________");
+
+});
+
 
 chatIo.on("connection", (socket) => {
     console.log("______________");
@@ -79,9 +139,16 @@ chatIo.on("connection", (socket) => {
 
     socket.join(roomNum);
 
+
     socket.on("message", (data) => {
         console.log(data)
         chatIo.in(roomNum).emit("message", data)
+    })
+
+
+    socket.on("disconnect", () => {
+        socket.disconnect();
+        console.log("disconnected  ")
     })
 
     console.log("______________");
@@ -105,7 +172,6 @@ ticTacToeIo.on("connection", (socket) => {
         localServerStore = serversSrores[roomNum];
     }
 
-    console.log("all sockets ", Object.keys(io.sockets.connected));
 
     socket.join(roomNum);
 
@@ -127,11 +193,11 @@ ticTacToeIo.on("connection", (socket) => {
 
     socket.on("disconnect", () => {
         console.log("disconnected  ")
-
     })
     console.log("______________");
 
 });
+
 
 let port = 3001;
 http.listen(port, function () {

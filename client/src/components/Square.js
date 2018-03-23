@@ -1,12 +1,16 @@
 import React from "react"
+import 'react-bootstrap';
+import "./Square.css"
 
-const Square = ({number, onClick , disabled}) => {
+
+const Square = ({number, onClick, disabled}) => {
     return (
-        <button onClick={onClick}
-                style={{height: 20, width: 20}}
-                disabled={disabled}
+        <button
+            onClick={onClick}
+            style={{height: 50, width: 50}}
+            disabled={disabled}
         >
-            {number}
+            <span className={"marks"}>{number}</span>
         </button>
     )
 }

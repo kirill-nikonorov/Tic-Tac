@@ -19,6 +19,9 @@ module.exports = {
             loader: "babel-loader",
             query: {presets: ["env", "react"]}
 
+        }, {
+            test: /\.css$/,
+            use: ['style-loader', 'css-loader']
         }]
     },
     devtool: "source-map",
