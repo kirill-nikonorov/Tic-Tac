@@ -3,9 +3,10 @@ const path = require("path")
 const webpack = require("webpack");
 const config = require("../webpack.config");
 const compiler = webpack(config);
-const authenticate = require("./middlewere/authenticate");
-
 const jwt = require('jsonwebtoken');
+
+
+let checkToken = require("./socketMiddlewere/socketCheck.js")
 
 
 let webpackDevMiddlewere = require("webpack-dev-middleware");
@@ -30,38 +31,13 @@ app.get("/", (req, res) => {
     res.sendFile(path.resolve(__dirname + "/static/index.html"))
 
 });
-// в завиимости от параметров возвращает токен-----
-app.use("/authinticate", authenticate.handleInvitedLink);
-app.use("/authinticate", authenticate.handleNewUsers);
-//app.delete("/authinticate", authenticate.removeTokenFromRoom)
 
 
-console.log("after auth");
+let authenticateIo = io.of("/authenticate");
+let roomFillerObserverIo = io.of("/roomFillerObserver");
+let chatIo = io.of("/chat");
+let ticTacToeIo = io.of("/ticTacToe");
 
-const checkToken = (socket, next) => {
-
-    let token = socket.handshake.query.token;
-
-    if (!token) {
-        console.log("there is no token , disconnect")
-        socket.disconnect();
-        return;
-    }
-
-    let decoded;
-    try {
-        decoded = jwt.verify(token, 'shh');
-    }
-    catch (e) {
-        console.log(e)
-        socket.disconnect();
-        return;
-    }
-    console.log("decoded = ", decoded)
-    socket.decoded = decoded
-    next();
-
-};
 const isRoomFree = (socket, next) => {
 
     let roomNum = socket.decoded.roomNum;
@@ -75,27 +51,86 @@ const isRoomFree = (socket, next) => {
         else socket.disconnect();
     })
 
-}
-
-let chatIo = io.of("/chat");
-let ticTacToeIo = io.of("/ticTacToe");
-let roomFillerObserverIo = io.of("/roomFillerObserver");
-
-let timer = setInterval(() => {
-    console.log("sockets = ", Object.keys(io.sockets.connected))
-}, 2000);
+};
 
 ticTacToeIo.use(checkToken);
 chatIo.use(checkToken);
 roomFillerObserverIo.use(checkToken);
 roomFillerObserverIo.use(isRoomFree);
 
+let rooms = [];
+authenticateIo.on("connection", (socket) => {
+
+    console.log("authenticate : connection ")
+    socket.on("getToken", (data) => {
+        let {id} = data;
+        console.log("authenticate : getToken , roomId = ", id)
+        if (typeof  id === "number") {
+            console.log(" getToken , in existing room")
+
+            handleJoiningInExistingRoom(id, socket);
+        }
+        else {
+            console.log(" getToken , in new room")
+
+            handleJoiningInNewRoom(socket);
+        }
+    });
+    socket.on("leaveRoom", () => {
+
+        let roomId = -1,
+            socketId;
+        rooms.forEach((room, id) => {
+            let elementId = room.indexOf(socket);
+            if (elementId !== -1) {
+                socketId = elementId;
+                roomId = id;
+            }
+        });
+        console.log("leaveRoom  , room = ", roomId)
+
+        if (roomId !== -1) {
+            rooms[roomId].splice(socketId, 1);
+            if (rooms[roomId].length === 0) rooms.splice(roomId, 1)
+            console.log("rooms after = ", rooms)
+        }
+    })
+    socket.on("disconnect", (socket) => {
+        console.log("disconnect = authentication ")
+
+    });
+});
+
+
+const handleJoiningInExistingRoom = (id, socket) => {
+
+    if (rooms[id] && rooms[id].length < 2) {
+        console.log("loin Existing room , socket = ", socket.id)
+        rooms[id].push(socket)
+        let token = jwt.sign({roomNum: id, areYouFirst: false}, "shh")
+        socket.emit("provideToken", {token: token})
+    }
+    else {
+        socket.emit("authenticationFail")
+    }
+};
+const handleJoiningInNewRoom = (socket) => {
+    console.log("loin new room , socket = ", socket.id)
+
+    let lastRoom = rooms.length;
+    rooms.push([socket])
+    let token = jwt.sign({roomNum: lastRoom, areYouFirst: true}, "shh")
+    console.log("provideToken")
+
+    socket.emit("provideToken", {token: token})
+
+};
+
 roomFillerObserverIo.on("connection", (socket) => {
     console.log("______________");
     console.log("roomFillerObserverIo : User connected = ", socket.decoded)
 
     let roomNum = socket.decoded.roomNum;
-
 
     roomFillerObserverIo.in(roomNum).clients((err, clients) => {
         if (err) throw  err;
@@ -118,7 +153,6 @@ roomFillerObserverIo.on("connection", (socket) => {
         });
     }, 1);
 
-
     socket.on("disconnect", () => {
 
         roomFillerObserverIo.in(roomNum).emit("endGame")
@@ -128,8 +162,6 @@ roomFillerObserverIo.on("connection", (socket) => {
     console.log("______________");
 
 });
-
-
 chatIo.on("connection", (socket) => {
     console.log("______________");
 
@@ -198,11 +230,19 @@ ticTacToeIo.on("connection", (socket) => {
 
 });
 
+let socketsTimer = setInterval(() => {
+    console.log("sockets = ", Object.keys(io.sockets.connected))
+}, 2000);
+let roomTimer = setInterval(() => {
+    console.log("rooms = ", rooms.map((room) => {
+        return room.length;
+    }))
+}, 2000)
 
 let port = 3001;
 http.listen(port, function () {
     setTimeout(() => console.log('Example app listening on port ' + port + '!'), 1000);
-});
+})
 
 
 

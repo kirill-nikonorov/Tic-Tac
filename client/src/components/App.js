@@ -7,69 +7,59 @@ import 'react-bootstrap';
 
 import qs from "qs"
 import jwt from "jwt-client"
+import io from "socket.io-client";
 
+let socket;
 
 class App extends React.Component {
     constructor() {
         super();
         let shouldStart = localStorage.getItem("shouldStart");
+
         console.log("shouldStart = ", shouldStart)
+
         this.state = {
             token: localStorage.getItem("token") ? localStorage.getItem("token") : null,
             shouldStart: shouldStart ? JSON.parse(shouldStart).shouldStart : true
-        }
+        };
 
-        this.leaveThisRoom = this.leaveThisRoom.bind(this);
-        this.goToNewRoom = this.goToNewRoom.bind(this);
-    }
 
-    getAuthenticationToken(roomParams) {
+        console.log("Main socket connection  = ");
 
-        let self = this;
+        socket = io("/authenticate", {
+            forceNew: true,
+        });
 
-        let urlTamplate = "/authinticate";
-
-        if (roomParams) {
-            urlTamplate += roomParams;
-        }
-
-        let xhr = new XMLHttpRequest();
-        xhr.open("get", urlTamplate, true);
-
-        xhr.responseType = 'json';
-
-        xhr.onreadystatechange = function () {
-
-            if (this.readyState !== 4) return;
-            if (this.status !== 200) {
-                console.log(this.status)
-                alert(this.status + " " + this.statusText + "\nДаннная ссылка недействительна")
-
-                return;
-            }
-
-            let token = xhr.response.token;
-
-            //   let decoded = jwt.read(token).claim;
+        socket.on("provideToken", ({token}) => {
+            console.log("provideToken");
 
             localStorage.setItem("token", token);
             console.log("localStorage = ", localStorage);
 
-            self.setState({
+            this.setState({
                 token: token,
                 shouldStart: true
             })
+        })
 
-        };
-        xhr.send(null)
+
+        socket.on("disconnect ", () => {
+            console.log("disconnect = autentication ")
+        });
+
+        this.leaveThisRoom = this.leaveThisRoom.bind(this);
+        this.goToNewRoom = this.goToNewRoom.bind(this);
+
 
     }
+
 
     leaveThisRoom() {
         console.log("leaveThisRoom");
 
         localStorage.removeItem("token");
         localStorage.setItem("shouldStart", JSON.stringify({shouldStart: false}));
+        socket.emit("leaveRoom");
         this.setState({
             token: undefined,
             shouldStart: false
@@ -83,7 +73,7 @@ class App extends React.Component {
         localStorage.setItem("shouldStart", JSON.stringify({shouldStart: true}))
 
         //this.getAuthenticationToken();
-        window.location="/"
+        window.location = "/"
 
     };
 
@@ -94,8 +84,13 @@ class App extends React.Component {
         console.log("willAuthGo ", willAuthGo)
 
         if (willAuthGo) {
+
             console.log("willAuthGo ", willAuthGo)
-            this.getAuthenticationToken(createUrlFromSearchParams());
+            console.log("willAuthGo  , data ", extractRoomIdFromSearch())
+
+            socket.emit("getToken", {id: extractRoomIdFromSearch()});
+
+
         }
 
         return (
@@ -120,25 +115,29 @@ class App extends React.Component {
             </div>
         )
     }
+
+    componentWillUnmount() {
+        socket.disconnect()
+    }
 }
 
-const createUrlFromSearchParams = () => {
+const extractRoomIdFromSearch = () => {
 
-    let urlTamplate = "";
+    let roomId;
 
     let searchParams = window.location.search.substring(1);
     if (searchParams) {
 
-        let roomNumString = qs.parse(searchParams).room;
-        let roomNum = parseInt(roomNumString);
+        let roomIdString = qs.parse(searchParams).room;
+        let parsedRoomId = parseInt(roomIdString);
 
-        console.log("createURL : roomNum = ", roomNum)
-        if (typeof roomNum === "number") {
+        console.log("createURL : roomIdParsed = ", parsedRoomId)
+        if (typeof parsedRoomId === "number") {
             console.log("полученны данные Комнаты из строки запроса")
-            urlTamplate += "?room=" + roomNum;
+            roomId = parsedRoomId;
         }
     }
-    return urlTamplate;
+    return roomId;
 };
 
 const generateInviteLink = (token) => {
@@ -150,7 +149,7 @@ const generateInviteLink = (token) => {
 
     return (<a href={inviteAdress}>{inviteAdress}</a>)
 
-}
+};
 
 
 export default App;
