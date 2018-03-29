@@ -3,21 +3,21 @@ let webpack = require("webpack");
 
 module.exports = {
     entry: {
+        //client: ['./client/src/index.jsx']
         client: ['webpack-hot-middleware/client', './client/src/index.jsx']
     },
     output: {
         filename: '[name].bundle.js',
         path: path.resolve(__dirname, './client/dist'),
+        publicPath: "/"
     },
-    plugins: [
-        new webpack.HotModuleReplacementPlugin()
-    ],
+
     module: {
         rules: [{
             exclude: /(node_modules)/,
             test: /\.jsx?$/,
-            loader: "babel-loader",
-            query: {presets: ["env", "react"]}
+            loaders: "babel-loader",
+
 
         }, {
             test: /\.css$/,
@@ -25,6 +25,6 @@ module.exports = {
         }]
     },
     devtool: "source-map",
-    mode: "development"
+
 
 }
