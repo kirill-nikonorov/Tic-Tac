@@ -41,11 +41,11 @@ let ticTacToeSocket = io.of("/ticTacToe");
 
 const isRoomFree = (socket, next) => {
 
-	let roomNum = socket.decoded.roomNum;
+	let roomId = socket.decoded.roomId;
 
-	roomFillerObserverSocket.in(roomNum).clients((err, clients) => {
+	roomFillerObserverSocket.in(roomId).clients((err, clients) => {
 		if (err) throw  err;
-		console.log(`isRoomFree clients of Room № ${roomNum} = `, clients);
+		console.log(`isRoomFree clients of Room № ${roomId} = `, clients);
 		if (clients.length < 2) {
 			next();
 		}
@@ -107,7 +107,7 @@ const handleJoiningInExistingRoom = (id, socket) => {
 	if (rooms[id] && rooms[id].length < 2) {
 		console.log("loin Existing room , socket = ", socket.id);
 		rooms[id].push(socket);
-		let token = jwt.sign({roomNum: id, areYouFirst: false}, "shh");
+		let token = jwt.sign({roomId: id, areYouFirst: false}, "shh");
 		socket.emit("provideToken", {token: token});
 	}
 	else {
@@ -119,7 +119,7 @@ const handleJoiningInNewRoom = (socket) => {
 
 	let lastRoom = rooms.length;
 	rooms.push([socket]);
-	let token = jwt.sign({roomNum: lastRoom, areYouFirst: true}, "shh");
+	let token = jwt.sign({roomId: lastRoom, areYouFirst: true}, "shh");
 	console.log("provideToken");
 
 	socket.emit("provideToken", {token: token});
@@ -130,32 +130,32 @@ roomFillerObserverSocket.on("connection", (socket) => {
 	console.log("______________");
 	console.log("roomFillerObserverIo : User connected = ", socket.decoded);
 
-	let roomNum = socket.decoded.roomNum;
+	let roomId = socket.decoded.roomId;
 
-	roomFillerObserverSocket.in(roomNum).clients((err, clients) => {
+	roomFillerObserverSocket.in(roomId).clients((err, clients) => {
 		if (err) throw  err;
 
 		if (clients.length < 2) {
-			socket.join(roomNum);
+			socket.join(roomId);
 		}
-		console.log(`clients of Room № ${roomNum} = `, clients);
+		console.log(`clients of Room № ${roomId} = `, clients);
 
 	});
 	setTimeout(() => {
-		roomFillerObserverSocket.in(roomNum).clients((err, clients) => {
+		roomFillerObserverSocket.in(roomId).clients((err, clients) => {
 			if (err) throw  err;
 
 			if (clients.length === 2) {
-				roomFillerObserverSocket.in(roomNum).emit("startGame");
+				roomFillerObserverSocket.in(roomId).emit("startGame");
 			}
-			console.log(`clients of Room № ${roomNum} = `, clients);
+			console.log(`clients of Room № ${roomId} = `, clients);
 
 		});
 	}, 1);
 
 	socket.on("disconnect", () => {
 
-		roomFillerObserverSocket.in(roomNum).emit("endGame");
+		roomFillerObserverSocket.in(roomId).emit("endGame");
 		console.log("disconnected  ");
 
 	});
@@ -167,14 +167,14 @@ chatSocket.on("connection", (socket) => {
 
 	console.log("chatIo : User connected = ", socket.decoded);
 
-	let roomNum = socket.decoded.roomNum;
+	let roomId = socket.decoded.roomId;
 
-	socket.join(roomNum);
+	socket.join(roomId);
 
 
 	socket.on("message", (data) => {
 		console.log(data);
-		chatSocket.in(roomNum).emit("message", data);
+		chatSocket.in(roomId).emit("message", data);
 	});
 
 
@@ -192,33 +192,33 @@ ticTacToeSocket.on("connection", (socket) => {
 	console.log("______________");
 
 	let localServerStore;
-	let roomNum = socket.decoded.roomNum;
+	let roomId = socket.decoded.roomId;
 
-	console.log("Tic Tac toe : User Connected , room = ", roomNum);
+	console.log("Tic Tac toe : User Connected , room = ", roomId);
 
 
-	if (!serversSrores[roomNum]) {
-		serversSrores[roomNum] = Array(9).fill(null);
+	if (!serversSrores[roomId]) {
+		serversSrores[roomId] = Array(9).fill(null);
 	}
 	if (!localServerStore) {
-		localServerStore = serversSrores[roomNum];
+		localServerStore = serversSrores[roomId];
 	}
 
 
-	socket.join(roomNum);
+	socket.join(roomId);
 
 	socket.on("makeStepEmit", (data) => {
 		localServerStore[data.number] = data.mark;
 
 		console.log("makeStep = ", data);
-		ticTacToeSocket.in(roomNum).emit("makeStep", data);
+		ticTacToeSocket.in(roomId).emit("makeStep", data);
 	});
 	socket.on("cleanBoard", () => {
 		console.log("cleanBoard");
 
-		serversSrores[roomNum] = Array(9).fill(null);
-		localServerStore = serversSrores[roomNum];
-		ticTacToeSocket.in(roomNum).emit("initialState", localServerStore);
+		serversSrores[roomId] = Array(9).fill(null);
+		localServerStore = serversSrores[roomId];
+		ticTacToeSocket.in(roomId).emit("initialState", localServerStore);
 	});
 
 	socket.emit("initialState", localServerStore);

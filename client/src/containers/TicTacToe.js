@@ -98,9 +98,9 @@ const calculateWinner = (square) => {
 
 const createSocketConnection = (token, actions) => {
 
-	const roomNum = jwt.read(token).claim.roomNum;
+	const roomId = jwt.read(token).claim.roomId;
 
-	console.log("createSocketConnection = ", roomNum);
+	console.log("createSocketConnection = ", roomId);
 
 	socket = io("/ticTacToe", {
 		forceNew: true,

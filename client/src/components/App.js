@@ -109,7 +109,6 @@ class App extends React.Component {
 					<br/>
 					<button onClick={this.leaveThisRoom}>Leave this room</button>
 					<br/>
-					{token ? generateInviteLink(token) : ""}
 				</footer>
 			</div>
 		);
@@ -140,11 +139,11 @@ const extractRoomIdFromSearch = () => {
 };
 
 const generateInviteLink = (token) => {
-	let roomNum = jwt.read(token).claim.roomNum;
+	let roomId = jwt.read(token).claim.roomId;
 
-	console.log("roomNum = ", roomNum);
+	console.log("roomId = ", roomId);
 
-	let inviteAdress = "http://localhost:3001/?room=" + roomNum;
+	let inviteAdress = "http://localhost:3001/?room=" + roomId;
 
 	return (<a href={inviteAdress}>{inviteAdress}</a>);
 
