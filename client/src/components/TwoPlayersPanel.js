@@ -44,7 +44,7 @@ class TwoPlayersPanel extends React.Component {
 			<div>
 
 				<Modal show={this.state.show} >
-					<Modal.Header closeButton>
+					<Modal.Header>
 						<Modal.Title>Expecting for opponent</Modal.Title>
 					</Modal.Header>
 					<Modal.Body className={"text-center center-block"}>
