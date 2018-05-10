@@ -18,7 +18,7 @@ class GameBoard extends React.Component {
 
 	render() {
 		return (
-			<div id="game-board">
+			<div id="game-board" >
 				<div id="game-row">
 					{this.renderSquare(0)}
 					{this.renderSquare(1)}

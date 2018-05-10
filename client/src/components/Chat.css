@@ -8,3 +8,11 @@
 ul.messages > li {
     list-style-type : none;
 }
+
+.firstPlayerMassage {
+    background-color: cornflowerblue;
+}
+
+.secondPlayerMassage {
+    background-color: mediumspringgreen;
+}

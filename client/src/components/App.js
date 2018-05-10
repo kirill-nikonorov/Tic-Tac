@@ -14,13 +14,9 @@ let socket;
 class App extends React.Component {
     constructor() {
         super();
-        let shouldStartSecondPlayerSearch = localStorage.getItem("shouldStartSecondPlayerSearch");
-
-        console.log("shouldStartSecondPlayerSearch = ", shouldStartSecondPlayerSearch);
 
         this.state = {
             token: localStorage.getItem("token") ? localStorage.getItem("token") : null,
-            shouldStartSecondPlayerSearch: shouldStartSecondPlayerSearch ? JSON.parse(shouldStartSecondPlayerSearch).shouldStartSecondPlayerSearch : true
         };
 
         console.log("Main socket connection  = ");
@@ -37,11 +33,10 @@ class App extends React.Component {
 
             this.setState({
                 token: token,
-                shouldStartSecondPlayerSearch: true
             });
         });
         socket.on("authenticationFail", () => {
-            alert("Try onother room, please")
+            alert("Try another room, please")
         });
 
 
@@ -50,49 +45,30 @@ class App extends React.Component {
         });
 
         this.leaveThisRoom = this.leaveThisRoom.bind(this);
-        App.goToNewRoom = App.goToNewRoom.bind(this);
+        App.goToRoom = App.goToRoom.bind(this);
 
 
     }
 
 
     leaveThisRoom() {
-        console.log("leaveThisRoom");
-
         localStorage.removeItem("token");
-        localStorage.setItem("shouldStartSecondPlayerSearch", JSON.stringify({shouldStartSecondPlayerSearch: false}));
         socket.emit("leaveRoom");
-        this.setState({
-            token: undefined,
-            shouldStartSecondPlayerSearch: false
-        });
-
-    }
-
-    static goToNewRoom() {
-
-        localStorage.removeItem("token");
-        localStorage.setItem("shouldStartSecondPlayerSearch", JSON.stringify({shouldStartSecondPlayerSearch: true}));
-
-        //this.getAuthenticationToken();
         window.location = "/";
 
     }
 
+    static goToRoom( id) {
+        console.log("go to new Room  = " , id)
+        socket.emit("getToken", {id: id});
+    }
+
+
     render() {
-        let {token, shouldStartSecondPlayerSearch} = this.state;
+        let {token} = this.state;
 
-        let willAuthGo = !token && shouldStartSecondPlayerSearch;
-        console.log("willAuthGo ", willAuthGo);
-
-        if (willAuthGo) {
-
-            console.log("willAuthGo ", willAuthGo);
-            console.log("willAuthGo  , data ", extractRoomIdFromSearch());
-
-            socket.emit("getToken", {id: extractRoomIdFromSearch()});
-
-
+        if (!token && areWeInvited()) {
+            App.goToRoom( extractRoomIdFromSearch())
         }
 
         return (
@@ -105,13 +81,13 @@ class App extends React.Component {
                                               inviteLink={generateInviteLink(token)}
                                               onModalButtonClick={this.leaveThisRoom}
                         />
-                        : "Enter a room"}
+                        : "Enter a room , please"}
                 </main>
                 <footer className={" panel-footer text-center"}>
-                    <button onClick={App.goToNewRoom}>Go to new room</button>
-                    <br/>
-                    {token ? <button onClick={this.leaveThisRoom}>Leave this room</button> : null}
-                    <br/>
+                    {token ?
+                        <button onClick={this.leaveThisRoom}>Leave this room</button> :
+                        <button onClick={() => App.goToRoom()}>Go to new room</button>
+                    }
                 </footer>
             </div>
         );
@@ -141,6 +117,10 @@ const extractRoomIdFromSearch = () => {
     return roomId;
 };
 
+const areWeInvited = () => {
+    return window.location.search !== "";
+
+};
 const generateInviteLink = (token) => {
     let roomId = jwt.read(token).claim.roomId;
 
@@ -151,6 +131,5 @@ const generateInviteLink = (token) => {
     return (<a href={inviteAdress}>{inviteAdress}</a>);
 
 };
-
 
 export default hot(module)(App);
