@@ -61,18 +61,19 @@ roomFillerObserverSocket.use(isRoomFree);
 let rooms = [];
 authenticateSocket.on("connection", (socket) => {
 
+    console.log("______________");
     console.log("authenticate : connection ");
-    
+
     socket.on("getToken", (data) => {
         let {id} = data;
         console.log("authenticate : getToken , roomId = ", id);
         if ( typeof  id === "number") {
-            console.log(" getToken , in existing room");
+            console.log("authenticate : getToken , in existing room");
 
             handleJoiningInExistingRoom(id, socket);
         }
         else {
-            console.log(" getToken , in new room");
+            console.log("authenticate : getToken , in new room");
 
             handleJoiningInNewRoom(socket);
         }
@@ -88,16 +89,32 @@ authenticateSocket.on("connection", (socket) => {
                 roomId = id;
             }
         });
-        console.log("leaveRoom  , room = ", roomId);
+        console.log(" authenticate : leaveRoom  , room = ", roomId);
 
         if (roomId !== -1) {
             rooms[roomId].splice(socketId, 1);
             if (rooms[roomId].length === 0) rooms.splice(roomId, 1);
-            console.log("rooms after = ", rooms);
+            console.log("authenticate : rooms after = ", rooms);
         }
     });
-    socket.on("disconnect", (socket) => {
-        console.log("disconnect = authentication ");
+    socket.on("disconnect", () => {
+        console.log("a disconnect   = authentication ");
+        let roomId = -1,
+            socketId;
+        rooms.forEach((room, id) => {
+            let elementId = room.indexOf(socket);
+            if (elementId !== -1) {
+                socketId = elementId;
+                roomId = id;
+            }
+        });
+        console.log(" authenticate : leaveRoom  , room = ", roomId);
+
+        if (roomId !== -1) {
+            rooms[roomId].splice(socketId, 1);
+            if (rooms[roomId].length === 0) rooms.splice(roomId, 1);
+            console.log(" authenticate :rooms after = ", rooms);
+        }
 
     });
 });
@@ -115,12 +132,12 @@ const handleJoiningInExistingRoom = (id, socket) => {
     }
 };
 const handleJoiningInNewRoom = (socket) => {
-    console.log("loin new room , socket = ", socket.id);
+    console.log("  authenticate : loin new room , socket = ", socket.id);
 
     let lastRoom = rooms.length;
     rooms.push([socket]);
     let token = jwt.sign({roomId: lastRoom, areYouFirst: true}, "shh");
-    console.log("provideToken");
+    console.log("  authenticate : provideToken");
 
     socket.emit("provideToken", {token: token});
 
@@ -138,7 +155,7 @@ roomFillerObserverSocket.on("connection", (socket) => {
         if (clients.length < 2) {
             socket.join(roomId);
         }
-        console.log(`clients of Room № ${roomId} = `, clients);
+        console.log(` roomFillerObserverIo : clients of Room № ${roomId} = `, clients);
 
     });
     setTimeout(() => {
@@ -156,14 +173,12 @@ roomFillerObserverSocket.on("connection", (socket) => {
     socket.on("disconnect", () => {
 
         roomFillerObserverSocket.in(roomId).emit("endGame");
-        console.log("disconnected  ");
+        console.log("disconnection =  roomFillerObserverSocket");
 
     });
-    console.log("______________");
 
 });
 chatSocket.on("connection", (socket) => {
-    console.log("______________");
 
     console.log("chatIo : User connected = ", socket.decoded);
 
@@ -180,17 +195,14 @@ chatSocket.on("connection", (socket) => {
 
     socket.on("disconnect", () => {
         socket.disconnect();
-        console.log("disconnected  ");
+        console.log("disconnected  = chat ");
     });
 
-    console.log("______________");
 
 });
 
 let serversSrores = [];
 ticTacToeSocket.on("connection", (socket) => {
-    console.log("______________");
-
     let localServerStore;
     let roomId = socket.decoded.roomId;
 
@@ -224,9 +236,8 @@ ticTacToeSocket.on("connection", (socket) => {
     socket.emit("initialState", localServerStore);
 
     socket.on("disconnect", () => {
-        console.log("disconnected  ");
+        console.log("disconnection = tic tac ");
     });
-    console.log("______________");
 
 });
 
