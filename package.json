@@ -6,11 +6,14 @@
     "dev": "node ./server/index.js"
   },
   "dependencies": {
+    "babel-eslint": "^8.2.3",
     "css-loader": "^0.28.11",
     "express": "^4.14.0",
     "jsonwebtoken": "^8.2.0",
     "jwt-client": "^0.2.1",
     "path": "^0.12.7",
+    "prop-types": "^15.6.1",
+    "qs": "latest",
     "react": "^16.2.0",
     "react-bootstrap": "^0.32.1",
     "react-dom": "^16.2.0",
@@ -18,6 +21,8 @@
     "react-redux": "^5.0.7",
     "redux": "^3.7.2",
     "redux-thunk": "^2.2.0",
+    "save-dev": "^2.0.0",
+    "seve": "^0.6.0",
     "socket.io": "^1.0.0",
     "socket.io-client": "^1.0.0",
     "style-loader": "^0.20.3"
@@ -27,6 +32,9 @@
     "babel-loader": "^7.1.4",
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.24.1",
+    "eslint": "^4.19.1",
+    "eslint-plugin-react": "^7.8.2",
+    "eslint-plugin-spellcheck": "0.0.10",
     "webpack": "^4.1.1",
     "webpack-cli": "^2.0.12",
     "webpack-dev-middleware": "^2.0.0",

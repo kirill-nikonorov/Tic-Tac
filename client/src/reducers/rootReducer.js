@@ -30,7 +30,6 @@ const rootReducer = (state = grtInitialState(), action) => {
 			history: state.history,
 			presentStep: action.number
 		};
-
 	default:
 		console.log("нет такой команды");
 		return state;

@@ -2,6 +2,8 @@ import React from "react";
 
 import Square from "./Square";
 import "./GameBoard.css";
+import PropTypes from 'prop-types';
+
 
 class GameBoard extends React.Component {
 
@@ -39,5 +41,12 @@ class GameBoard extends React.Component {
 		);
 	}
 }
+
+GameBoard.propTypes = {
+    onClick: PropTypes.func,
+    squares: PropTypes.array,
+    disabled: PropTypes.bool,
+
+};
 
 export default GameBoard;

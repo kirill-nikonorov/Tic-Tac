@@ -5,10 +5,10 @@ const devConfig = require("../webpack.dev");
 const compiler = webpack(devConfig);
 const jwt = require("jsonwebtoken");
 
-let checkToken = require("./socketMiddlewere/socketCheck.js");
+let checkToken = require("./socketMiddleware/socketCheck.js");
 
-let webpackDevMiddlewere = require("webpack-dev-middleware");
-let webpackHotMiddlewere = require("webpack-hot-middleware");
+let webpackDevMiddleware = require("webpack-dev-middleware");
+let webpackHotMiddleware = require("webpack-hot-middleware");
 
 const express = require("express");
 const app = express();
@@ -16,8 +16,8 @@ const http = require("http").Server(app);
 const io = require("socket.io")(http);
 
 
-app.use(webpackDevMiddlewere(compiler));
-app.use(webpackHotMiddlewere(compiler));
+app.use(webpackDevMiddleware(compiler));
+app.use(webpackHotMiddleware(compiler));
 
 /*app.use(express.static(path.resolve( "./client/dist/")));*/
 
@@ -241,10 +241,10 @@ ticTacToeSocket.on("connection", (socket) => {
 
 });
 
-let socketsTimer = setInterval(() => {
+ setInterval(() => {
     console.log("sockets = ", Object.keys(io.sockets.connected));
 }, 2000);
-let roomTimer = setInterval(() => {
+ setInterval(() => {
     console.log("rooms = ", rooms.map((room) => {
         return room.length;
     }));

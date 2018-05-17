@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from 'prop-types';
 
 import io from "socket.io-client";
 import "./Chat.css";
@@ -25,8 +26,8 @@ class Chat extends React.Component {
 
             let newLi = document.createElement("li");
             newLi.innerHTML = message;
-            newLi.classList.add(areYouFirst ? "firstPlayerMassage" : "secondPlayerMassage")
-            let messages = this.refs.messages;
+            newLi.classList.add(areYouFirst ? "firstPlayerMassage" : "secondPlayerMassage");
+            let messages = this.ulMessages;
             messages.prepend(newLi);
 
         });
@@ -38,7 +39,7 @@ class Chat extends React.Component {
     handleSubmit(e) {
         e.preventDefault();
 
-        let {message  , token } = this.state;
+        let {message, token} = this.state;
 
         if (message.length === 0) return;
 
@@ -46,7 +47,7 @@ class Chat extends React.Component {
 
         socket.emit("message", {message, areYouFirst});
         this.setState({message: ""});
-        this.refs.text.value = "";
+        this.textInput.value = "";
     }
 
     onChange(e) {
@@ -62,13 +63,13 @@ class Chat extends React.Component {
         return (
             <div>
                 <form action="" id="chatForm" onSubmit={this.handleSubmit}>
-                    <input ref={"text"} onChange={this.onChange} value={this.state.message}
+                    <input ref={(input) => { this.textInput = input; }} onChange={this.onChange} value={this.state.message}
                            autoComplete={"off"}
                            id="text"/>
                     <button>Отправить</button>
                 </form>
                 <div className={"panel chat-panel"}>
-                    <ul className={"messages"} ref={"messages"}/>
+                    <ul className={"messages"} ref={(ul) => { this.ulMessages = ul; }}/>
                 </div>
             </div>
         );
@@ -81,5 +82,8 @@ class Chat extends React.Component {
     }
 }
 
+Chat.propTypes = {
+    token: PropTypes.object
+};
 
 export default Chat;

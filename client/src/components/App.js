@@ -44,14 +44,14 @@ class App extends React.Component {
             console.log("disconnect = autentication ");
         });
 
-        this.leaveThisRoom = this.leaveThisRoom.bind(this);
+        App.leaveThisRoom = App.leaveThisRoom.bind(this);
         App.goToRoom = App.goToRoom.bind(this);
 
 
     }
 
 
-    leaveThisRoom() {
+    static leaveThisRoom() {
         localStorage.removeItem("token");
         socket.emit("leaveRoom");
         window.location = "/";
@@ -59,7 +59,7 @@ class App extends React.Component {
     }
 
     static goToRoom( id) {
-        console.log("go to new Room  = " , id)
+        console.log("go to new Room  = " , id);
         socket.emit("getToken", {id: id});
     }
 
@@ -79,13 +79,13 @@ class App extends React.Component {
                 <main className={" panel panel-body"}>
                     {token ? <TwoPlayersPanel token={token}
                                               inviteLink={generateInviteLink(token)}
-                                              onModalButtonClick={this.leaveThisRoom}
+                                              onModalButtonClick={App.leaveThisRoom}
                         />
                         : "Enter a room , please"}
                 </main>
                 <footer className={" panel-footer text-center"}>
                     {token ?
-                        <button onClick={this.leaveThisRoom}>Leave this room</button> :
+                        <button onClick={App.leaveThisRoom}>Leave this room</button> :
                         <button onClick={() => App.goToRoom()}>Go to new room</button>
                     }
                 </footer>

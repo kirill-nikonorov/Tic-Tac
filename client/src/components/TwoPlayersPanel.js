@@ -1,6 +1,8 @@
 import React from "react";
 import {Modal, Button} from "react-bootstrap";
 import jwt from "jwt-client";
+import PropTypes from 'prop-types';
+
 
 
 import io from "socket.io-client";
@@ -73,5 +75,10 @@ class TwoPlayersPanel extends React.Component {
     }
 }
 
+TwoPlayersPanel.propTypes = {
+    inviteLink: PropTypes.element,
+    onModalButtonClick: PropTypes.func
+
+};
 
 export default TwoPlayersPanel;

@@ -1,12 +1,12 @@
 const jwt = require('jsonwebtoken');
 
 const checkToken = (socket, next) => {
-    console.log("checkToken")
+    console.log("checkToken");
 
     let token = socket.handshake.query.token;
 
     if (!token) {
-        console.log("there is no token , disconnect")
+        console.log("there is no token , disconnect");
         socket.disconnect();
         return;
     }
@@ -16,12 +16,12 @@ const checkToken = (socket, next) => {
         decoded = jwt.verify(token, 'shh');
     }
     catch (e) {
-        console.log(e)
+        console.log(e);
         socket.disconnect();
         return;
     }
-    console.log("decoded = ", decoded)
-    socket.decoded = decoded
+    console.log("decoded = ", decoded);
+    socket.decoded = decoded;
     next();
 
 };

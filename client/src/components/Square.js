@@ -1,7 +1,7 @@
 import React from "react";
 import "react-bootstrap";
 import "./Square.css";
-
+import PropTypes from 'prop-types';
 
 const Square = ({number, onClick, disabled}) => {
     return (
@@ -15,5 +15,12 @@ const Square = ({number, onClick, disabled}) => {
             < span className={"marks"}>{number}</span>
         </button>
     );
+};
+
+Square.propTypes = {
+    number: PropTypes.number,
+    onClick: PropTypes.func,
+    disabled: PropTypes.bool,
+
 };
 export default Square;
