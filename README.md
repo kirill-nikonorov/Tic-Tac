@@ -1,5 +1,6 @@
-# Tic-TacScope Overview As a part of the test task, you need to develop a simple JavaScript application – an online tictac-toe game (business requirements):
+# Tic-TacScope Overview 
 
+As a part of the test task, you need to develop a simple JavaScript application – an online tictac-toe game (business requirements):
 
 When a user opens a page, (s)he sees a screen for waiting of a second player. On the screen (s)he sees a link which needs to be sent to the second player.
 Having opened the invitation link in browser, the second player sees a game screen. The first player is sent to the game screen as well.
