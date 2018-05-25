@@ -15,7 +15,6 @@ const rootReducer = (state = grtInitialState(), action) => {
 		square[action.number] = state.xIsNext ? "x" : "o";
 
 		return {
-
 			square: square,
 			xIsNext: !state.xIsNext
 		};

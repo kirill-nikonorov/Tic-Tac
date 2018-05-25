@@ -68,6 +68,7 @@ class TicTacToe extends React.Component {
 }
 
 const cleanBoard = () => {
+    console.log("cleanBoard")
     socket.emit("cleanBoard");
 };
 
@@ -121,29 +122,27 @@ const createSocketConnection = (token, actions) => {
 };
 
 
-const
-    mapDispatchToProps = (dispatch) => {
-        return {
-            dispatch: dispatch,
-            actions: bindActionCreators(actions, dispatch)
-        };
+const mapDispatchToProps = (dispatch) => {
+    return {
+        dispatch: dispatch,
+        actions: bindActionCreators(actions, dispatch)
     };
-const
-    mapStateToProps = (state, props) => {
-        //   console.log("mapToProps = " , props)
-        return {
-            square: state.square,
-            xIsNext: state.xIsNext,
+};
+const mapStateToProps = (state, props) => {
+    //   console.log("mapToProps = " , props)
+    return {
+        square: state.square,
+        xIsNext: state.xIsNext,
 
-            token: props.token
+        token: props.token
 
-        };
     };
+};
 
 TicTacToe.propTypes = {
-    token: PropTypes.object,
-    actions: PropTypes.array,
-    square: PropTypes.element,
+    token: PropTypes.string,
+    actions: PropTypes.object,
+    square: PropTypes.array,
     xIsNext: PropTypes.bool,
     dispatch: PropTypes.func,
 

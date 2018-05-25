@@ -5,20 +5,18 @@ export const makeStep = (number) => ({
     number: number
 });
 
-export const initialItems = (data) => {
-    return {
+export const initialItems = (data) => ({
         type: types.INITIAL_ITEMS,
         squareArr: data
     }
-};
+);
 
 
 export const makeStepSocket = (socket, number, mark) => {
-    return (dispatch) => {
+    return () => {
         socket.emit('makeStepEmit', {number: number, mark: mark})
     }
 };
-
 
 
 export const loadInitialDataSocket = (socket) => {
@@ -31,7 +29,6 @@ export const loadInitialDataSocket = (socket) => {
         })
     }
 };
-
 
 /*export const changeStepNumber = (number) => ({
     type: types.CHANGE_STEP_NUMBER,

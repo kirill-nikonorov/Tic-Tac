@@ -4,8 +4,15 @@ import PropTypes from 'prop-types';
 import io from "socket.io-client";
 import "./Chat.css";
 import jwt from "jwt-client";
+import styled from 'styled-components';
 
 let socket;
+
+const ChatPanel = styled.div`
+    height: 150px;
+    border: 1px solid grey;
+    overflow: auto;
+`;
 
 class Chat extends React.Component {
     constructor(props) {
@@ -32,6 +39,7 @@ class Chat extends React.Component {
 
         });
 
+
         this.onChange = this.onChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
@@ -55,6 +63,7 @@ class Chat extends React.Component {
         this.setState({message: value});
     }
 
+
     render() {
         let {token} = this.props;
         if (!token) {
@@ -62,15 +71,20 @@ class Chat extends React.Component {
         }
         return (
             <div>
+
                 <form action="" id="chatForm" onSubmit={this.handleSubmit}>
-                    <input ref={(input) => { this.textInput = input; }} onChange={this.onChange} value={this.state.message}
+                    <input ref={(input) => {
+                        this.textInput = input;
+                    }} onChange={this.onChange} value={this.state.message}
                            autoComplete={"off"}
                            id="text"/>
                     <button>Отправить</button>
                 </form>
-                <div className={"panel chat-panel"}>
-                    <ul className={"messages"} ref={(ul) => { this.ulMessages = ul; }}/>
-                </div>
+                <ChatPanel>
+                    <ul className={"messages"} ref={(ul) => {
+                        this.ulMessages = ul;
+                    }}/>
+                </ChatPanel>
             </div>
         );
     }
@@ -83,7 +97,7 @@ class Chat extends React.Component {
 }
 
 Chat.propTypes = {
-    token: PropTypes.object
+    token: PropTypes.string
 };
 
 export default Chat;

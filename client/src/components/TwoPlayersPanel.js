@@ -3,7 +3,7 @@ import {Modal, Button} from "react-bootstrap";
 import jwt from "jwt-client";
 import PropTypes from 'prop-types';
 
-
+import styled from 'styled-components';
 
 import io from "socket.io-client";
 
@@ -11,6 +11,14 @@ import TicTacToe from "../containers/TicTacToe";
 import Chat from "./Chat";
 
 let socket;
+
+const TwoPlayersElements = styled.div`
+             display: flex;
+             flex-direction: row;
+             justify-content: space-around;
+             align-items: center;
+             flex: 1 0 500px;
+            `;
 
 class TwoPlayersPanel extends React.Component {
     constructor({token}) {
@@ -41,12 +49,12 @@ class TwoPlayersPanel extends React.Component {
         let {inviteLink, onModalButtonClick} = this.props;
         let areYouFirst = jwt.read(token).claim.areYouFirst;
 
+
+        console.log(TwoPlayersElements)
+
         return (
             <div>
-
-
                 <Modal show={!hasSecondPlayer}>
-
                     <Modal.Header>
                         <Modal.Title> {areYouFirst ? "Expecting for opponent" : "You opponent left the room"}</Modal.Title>
                     </Modal.Header>
@@ -61,11 +69,10 @@ class TwoPlayersPanel extends React.Component {
                     </Modal.Footer>
                 </Modal>
 
-                <div className={"two-players-elements"}>
+                <TwoPlayersElements>
                     <TicTacToe token={token}/>
                     <Chat token={token}/>
-                </div>
-
+                </TwoPlayersElements>
             </div>
         );
     }
